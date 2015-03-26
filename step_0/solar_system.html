@@ -24,6 +24,12 @@ uniform mat4 projectionMatrix;
 void
 main()
 {
+
+	gl_PointSize = 10.0;
+  // gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+  // return;
+
+
 	vec3 pPrime = ( modelViewMatrix * vec4(center, 1.0) ).xyz;			// point of center after mv transformation
 
 	vec3 v = vec3(0.0, 0.0, 0.0) - pPrime;					// vector from center to eye
@@ -151,9 +157,8 @@ main()
 <script type="text/javascript" src="../common/J3DI.js"></script>
 <script type="text/javascript" src="../common/J3DIMath.js"></script>
 <script type="text/javascript" src="../common/MV.js"></script>
-<script type="text/javascript" src="movement.js"></script>
-<script type="text/javascript" src="orbit.js"></script>
 <script type="text/javascript" src="Camera.js"></script>
+<script type="text/javascript" src="CameraController.js"></script>
 <script type="text/javascript" src="planet_data.js"></script>
 <script type="text/javascript" src="planet_calc.js"></script>
 <script type="text/javascript" src="planet_textures.js"></script>
@@ -165,7 +170,7 @@ main()
 </head>
 
 <body>
-<canvas id="gl-canvas" width="2048" height="1024">
+<canvas id="gl-canvas" width="512" height="512">
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>
 

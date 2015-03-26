@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Chase Heble 43741005</title>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+attribute  vec4 vPosition;
+varying float height;
+uniform vec4 rquat;
+attribute vec4 vNormal;
+varying vec3 N, L, E;
+uniform vec4 lightPosition;
+uniform mat4 modelViewMatrix;
+
+
+vec4 multq(vec4 a, vec4 b)
+{
+	return(vec4(a.x*b.x-dot(a.yzw, b.yzw), a.x*b.yzw+b.x*a.yzw+cross(b.yzw, a.yzw)));
+}
+
+vec4 invq(vec4 a)
+{
+	return(vec4(a.x, -a.yzw)/dot(a, a));
+}
+
+void main()
+{
+
+	vec4 p;
+	p = vec4(0.0, vPosition.xyz);  // input point quaternion
+	p = multq(rquat, multq(p, invq(rquat))); // rotated point quaternion
+	p = (modelViewMatrix * vec4(p.yzw, 1.0));
+	gl_Position = vec4(p); // back to homogeneous coordinates
+
+	vec4 pl;
+	pl = vec4(0.0, lightPosition.xyz);
+	pl = multq(rquat, multq(pl, invq(rquat)));
+	pl = (modelViewMatrix * vec4(pl.yzw, 0.0));
+	vec3 light = vec3( pl.xyz );
+
+	vec4 n;
+	n = vec4(0.0, vNormal.xyz);
+	n = multq(rquat, multq(n, invq(rquat)));
+	n = (modelViewMatrix * vec4(n.yzw, 0.0));
+	N = normalize(vec3( n.xyz ));
+
+    L = normalize( light - p.xyz );
+	E = normalize( - p.yzw );
+	height = vPosition.z;
+
+}
+
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+precision mediump float;
+
+uniform vec4 ambientProduct;
+uniform vec4 diffuseProduct;
+uniform vec4 specularProduct;
+uniform float shininess;
+varying vec3 N, L, E;
+varying float height;
+
+void
+main()
+{
+	// get fragment base color from height
+	vec4 material_color;
+	if(height < 0.0){
+		material_color = vec4(0.0, 0.565, 1.0, 1.0);
+	} else if(height < 0.01){
+		float scale = height/0.01;
+		vec4 color0 = vec4(1.0, 0.733, 0.467, 1.0);
+		vec4 color1 = vec4(1.0, 0.867, 0.467, 1.0);
+		material_color = mix(color0, color1, scale);
+	} else if(height < 0.35){
+		float scale = (height - 0.01)/(0.35 - 0.01);
+		vec4 color0 = vec4(0.059, 0.58, 0.018, 1.0);
+		vec4 color1 = vec4(0.153, 0.294, 0.137, 1.0);
+		material_color = mix(color0, color1, scale);
+	} else {
+		float scale = (height - 0.35)/(0.6 - 0.35);
+		vec4 color0 = vec4(0.318, 0.376, 0.318, 1.0);
+		vec4 color1 = vec4(0.918, 0.929, 0.918, 1.0);
+		if(scale >= 0.8) material_color = vec4(0.918, 0.929, 0.918, 1.0);
+		else material_color = mix(color0, color1, scale);
+	}
+
+	// normalize L, E, and N
+	vec3 Lnorm = vec3(normalize(L));
+	vec3 Enorm = vec3(normalize(E));
+	vec3 Nnorm = vec3(normalize(N));
+    vec3 Hnorm = normalize( Lnorm + Enorm );
+
+	// ambient light
+    vec4 ambient = ambientProduct * material_color;
+	ambient.a = 1.0;
+	// diffuse light
+    float Kd = max( dot(Lnorm, Nnorm), 0.0 );
+    vec4  diffuse = Kd * diffuseProduct * material_color;
+	// specular light
+    float Ks = pow( max(dot(Nnorm, Hnorm), 0.0), shininess );
+    vec4  specular = Ks * specularProduct;
+    if( dot(Lnorm, Nnorm) < 0.0 ) specular = vec4(0.0, 0.0, 0.0, 0.0);
+
+	// create silhouettes
+	if( abs(dot(Nnorm, Enorm)) <= 0.05){
+		ambient = vec4(0.0, 0.0, 0.0, 1.0);
+		diffuse = vec4(0.0, 0.0, 0.0, 1.0);
+		specular = vec4(0.0, 0.0, 0.0, 1.0);
+	}
+
+	// set color
+	gl_FragColor = ambient + diffuse + specular;
+
+}
+</script>
+
+<script type="text/javascript" src="../common/webgl-utils.js"></script>
+<script type="text/javascript" src="../common/initShaders.js"></script>
+<script type="text/javascript" src="../common/MV.js"></script>
+<script type="text/javascript" src="sphere_test.js"></script>
+</head>
+
+<body>
+<canvas id="gl-canvas" width="512" height="512">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+</body>
+</html>

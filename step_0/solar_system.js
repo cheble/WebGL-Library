@@ -11,10 +11,6 @@ var shininess = 100.0;
 // Texture
 var texture;
 
-// TODO static canvis
-var CANVAS_SIZE_X = 2048;
-var CANVAS_SIZE_Y = 1024;
-
 
 
 // ============================================================================
@@ -24,20 +20,20 @@ var theSphereVBOPoints;
 var theSphereProgram;
 var theSpherePoints = [];
 
-var theSphereVertices = [
-	vec4( 0.0,  0.0,  0.0, 1.0 ),
-	vec4( 1.0,  0.0,  0.0, 1.0 ),
-	vec4( 2.0,  0.0,  0.0, 1.0 ),
-	vec4( 3.0,  0.0,  0.0, 1.0 )
+var theQuadVertices = [
+	vec4(  0.0,  -0.5,  0.0,  1.0 ),
+	vec4(  1.0,  -0.5,  0.0,  1.0 ),
+	vec4(  2.0,   0.5,  0.0,  1.0 ),
+	vec4(  3.0,   0.5,  0.0,  1.0 )
 ];
 
 function sphereQuad(a, b, c, d)
 {
 
-	theSpherePoints.push(theSphereVertices[a]);
-	theSpherePoints.push(theSphereVertices[b]);
-	theSpherePoints.push(theSphereVertices[c]);
-	theSpherePoints.push(theSphereVertices[d]);
+	theSpherePoints.push(theQuadVertices[a]);
+	theSpherePoints.push(theQuadVertices[b]);
+	theSpherePoints.push(theQuadVertices[c]);
+	theSpherePoints.push(theQuadVertices[d]);
 }
 
 function initSphere()
@@ -58,7 +54,7 @@ function initSphere()
 function drawSphere(theProgram, p, mv, invMV, center, radius)
 {
 
-	gl.uniformMatrix4fv( gl.getUniformLocation(theProgram, "projectionMatrix"),false, flatten(p));
+	gl.uniformMatrix4fv( gl.getUniformLocation(theProgram, "projectionMatrix"),false, p.getAsFloat32Array() );
 
 	gl.uniformMatrix4fv( gl.getUniformLocation(theProgram, "modelViewMatrix"),false, mv.getAsFloat32Array() );
 
@@ -74,7 +70,7 @@ function drawSphere(theProgram, p, mv, invMV, center, radius)
 
 	gl.uniform1f( gl.getUniformLocation(theProgram, "shininess"), shininess );
 
-	gl.uniform3fv( gl.getUniformLocation(theProgram, "center"), center.getAsFloat32Array() );
+	gl.uniform3fv( gl.getUniformLocation(theProgram, "center"), center.getAsArray() );
 
 	gl.uniform1f( gl.getUniformLocation(theProgram, "radius"), radius );
 
@@ -84,7 +80,8 @@ function drawSphere(theProgram, p, mv, invMV, center, radius)
 	gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(vPosition);
 
-	gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+	// gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+	gl.drawArrays(gl.POINTS, 0, 4);
 }
 
 // ============================================================================
@@ -111,8 +108,13 @@ window.onload = function init()
 	gl.clearColor(0.0, 0.0, 0.0, 1.0 );
 
 	// init
-	camera = new Camera();
+	var controller = new CameraController();
+	controller.init(canvas);
+
+	camera = new Camera(controller);
 	camera.init(canvas);
+
+	console.log(camera);
 
 	initTexture();
 	initSphere();
@@ -190,40 +192,33 @@ function render()
 {
 	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
-	// TODO calc mv based on ui actions
 	var modelViewM = camera.getModelViewMatrix();
-	modelViewM = new J3DIMatrix4();
 	var projM = camera.projM;
 	var invModelViewM = new J3DIMatrix4(modelViewM);
 	invModelViewM.invert();
 
 
 	// projection matrix
-	var  p = perspective(Camera.DEFAULT_FOVY, Camera.DEFAULT_ASPECT,
-      Camera.DEFAULT_ZNEAR, Camera.DEFAULT_ZFAR);
+	// var  p = perspective(Camera.DEFAULT_FOVY, Camera.DEFAULT_ASPECT, Camera.DEFAULT_ZNEAR, Camera.DEFAULT_ZFAR);
 
 	// modelview matrix
-	var mv = lookAt(eye, at, up);
+	// var mv = lookAt(eye, at, up);
 
 
-	var invMV = inverseMatrix(mv);
+	// var invMV = inverseMatrix(mv);
 
 	// modelViewM = new J3DIMatrix4(flatten(mv));
 	// projM = new J3DIMatrix4(flatten(p));
 	// invModelViewM = new J3DIMatrix4(flatten(invMV));
 
-	  console.log(flatten(mv));
-	  console.log(modelViewM.getAsFloat32Array());
-
 	gl.useProgram(theSphereProgram);
-
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 	gl.uniform1i(gl.getUniformLocation(theSphereProgram, "texture"), 0);
 
-	var center = new J3DIVector3(0.0, 0.0, 0.0);
+	var center = new J3DIVector3(0.0, 0.0, 5.0);
 	var radius = 1;
-	drawSphere(theSphereProgram, p, modelViewM, invModelViewM, center, radius);
+	drawSphere(theSphereProgram, projM, modelViewM, invModelViewM, center, radius);
 
 	requestAnimFrame( render );
 }
