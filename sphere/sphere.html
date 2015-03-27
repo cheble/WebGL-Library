@@ -52,9 +52,17 @@ main()
 
 	vec3 pPrime = (modelViewMatrix * vec4(center, 1.0)).xyz;			// point of center after mv transformation
 
-	vec3 v = vec3(0.0, 0.0, 0.0) - pPrime;					// vector from center to eye
+	// vec3 v = vec3(0.0, 0.0, 0.0) - pPrime;					// vector from center to eye
+  //
+	// vec3 vPrime = vec3(-v.y, v.x, 0.0);						// vector orthagonal to v
+  vec3 v = pPrime - vec3(0.0, 0.0, 0.0);					// vector from center to eye
 
-	vec3 vPrime = vec3(-v.y, v.x, 0.0);						// vector orthagonal to v
+	vec3 vPrime = vec3(0.0, 0.0, 1.0);
+	if (v == vec3(0.0, 0.0, 0.0) || v.z == 0.0) {
+		vPrime = vec3(0.0, 0.0, 1.0);
+	} else {
+		vPrime = vec3(1, 1, -1.0 * (v.x + v.y) / v.z);//vec3(-v.y, v.x, 0.0);						// vector orthagonal to v
+	}
 
 	if(vPosition.x == 1.0){
 

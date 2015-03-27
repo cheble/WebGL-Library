@@ -416,7 +416,7 @@ function render() {
   inverseMV = inverseMatrix(mv);
 
   var center = vec3(0.0, 0.0, 0.0)
-  var radius = 1.0;
+  var radius = 0.4;
 
   drawSphere(camera.projM, mv, inverseMV, center, radius);
 }
