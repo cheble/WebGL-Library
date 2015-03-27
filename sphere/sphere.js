@@ -1,6 +1,6 @@
 function Shading() {
   /** Vector representing the light position */
-  this.lightPosition = vec4(0.0, 0.0, 2.0, 0.0 );
+  this.lightPosition = vec4(0.0, 0.0, 0.1, 0.0 );
   /** Ambient Reflection Constant */
   this.ka = 0.5;
   /** Diffuse Reflection Constant */
@@ -52,7 +52,7 @@ function Camera(canvas) {
       thisCamera.startScale(x, y);
     }
 
-    requestAnimFrame( render );
+    // requestAnimFrame( render );
   });
 
   canvas.addEventListener("mousemove", function(e){
@@ -94,8 +94,6 @@ function Camera(canvas) {
         thisCamera.lastPos[1] = curPos[1];
         thisCamera.lastPos[2] = curPos[2];
       }
-
-      requestAnimFrame( render );
     }
 
     if (thisCamera.scalingMove) {
@@ -112,8 +110,10 @@ function Camera(canvas) {
         thisCamera.curtX = x;
         thisCamera.curtY = y;
       }
+    }
 
-      requestAnimFrame( render );
+    if (thisCamera.scalingMove || thisCamera.trackingMove) {
+      // requestAnimFrame( render );
     }
 
   });
@@ -212,6 +212,7 @@ window.onload = function init() {
 
   // init objects
   initSphere();
+  initCube();
 
   render();
 
@@ -226,7 +227,6 @@ function initSphere() {
   theSphereVBOPoints = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, theSphereVBOPoints);
 
-  // TODO switch over to sphereVertices
   // buffer vertex data
   gl.bufferData(gl.ARRAY_BUFFER, flatten(sphereVertices), gl.STATIC_DRAW);
 
@@ -257,10 +257,10 @@ function drawSphere(p, mv, inverseMV, center, radius) {
   gl.enableVertexAttribArray(vPosition);
 
   // draw
-  // gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+  gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
   // testing
-  gl.drawArrays(gl.POINTS, 0, 4);
+  // gl.drawArrays(gl.POINTS, 0, 4);
 }
 
 function inverseMatrix(mat) {
@@ -371,18 +371,6 @@ function multiplyQuat(a, b)
   return quat;
 }
 
-function buildRotationMatrix(q)
-{
-  var m = mat4(1-2*q[2]*q[2]-2*q[3]*q[3], 2*q[1]*q[2]+2*q[0]*q[3],   2*q[1]*q[3]-2*q[0]*q[2],   0,
-    2*q[1]*q[2]-2*q[0]*q[3],   1-2*q[1]*q[1]-2*q[3]*q[3], 2*q[2]*q[3]+2*q[0]*q[1],   0,
-    2*q[1]*q[3]+2*q[0]*q[2],   2*q[2]*q[3]-2*q[0]*q[1],   1-2*q[1]*q[1]-2*q[2]*q[2], 0,
-    0,                         0,                         0,                         1);
-
-  m = transpose(m);
-
-  return m;
-}
-
 function invq(a)
 {
   return( scalev( 1.0/dot(a, a) , vec4(a[0], negate(a.slice(1,4)))) );
@@ -408,15 +396,95 @@ function render() {
   var s = scale(camera.scale, camera.scale, camera.scale);
   var r = buildRotationMatrix(camera.curtQuat);
   var mv = mat4();
-  mv = mult(mv, t);
+  mv = mult(t, mv);
   mv = mult(mv, s);
   mv = mult(mv, r);
 
   var inverseMV = mat4();
   inverseMV = inverseMatrix(mv);
 
-  var center = vec3(0.0, 0.0, 0.0)
+  var center = vec3(0.5, 0.5, 0.0)
   var radius = 0.4;
 
+  var aspect = canvas.width * 1.0 / canvas.height;
+  var p = perspective(45.0, aspect, 0.1, 1000.0);
+  // drawSphere(p, mv, inverseMV, center, radius);
   drawSphere(camera.projM, mv, inverseMV, center, radius);
+
+  drawCube(camera.projM, mv)
+
+  requestAnimFrame( render );
+}
+
+
+
+
+
+var theCubeVBOPoints;
+var theCubeProgram;
+var theWireCubePoints = [];
+
+var theCubeVertices = [
+  vec4( -1.0, -1.0,  1.0, 1.0 ),
+  vec4( -1.0,  1.0,  1.0, 1.0 ),
+  vec4(  1.0,  1.0,  1.0, 1.0 ),
+  vec4(  1.0, -1.0,  1.0, 1.0 ),
+  vec4( -1.0, -1.0, -1.0, 1.0 ),
+  vec4( -1.0,  1.0, -1.0, 1.0 ),
+  vec4(  1.0,  1.0, -1.0, 1.0 ),
+  vec4(  1.0, -1.0, -1.0, 1.0 )
+];
+
+function wireQuad(a, b, c, d)
+{
+  theWireCubePoints.push(theCubeVertices[a]);
+  theWireCubePoints.push(theCubeVertices[b]);
+  theWireCubePoints.push(theCubeVertices[c]);
+  theWireCubePoints.push(theCubeVertices[d]);
+}
+
+function wireCube()
+{
+  wireQuad( 1, 0, 3, 2 );
+  wireQuad( 2, 3, 7, 6 );
+  wireQuad( 3, 0, 4, 7 );
+  wireQuad( 6, 5, 1, 2 );
+  wireQuad( 4, 5, 6, 7 );
+  wireQuad( 5, 4, 0, 1 );
+}
+
+function initCube()
+{
+  // initialize the cube
+  wireCube();
+
+  // Load shaders and initialize attribute buffers
+  theCubeProgram = initShaders(gl, "cube-vertex-shader", "cube-fragment-shader");
+  gl.useProgram(theCubeProgram);
+
+  // Create VBOs and load the data into the VBOs
+  theCubeVBOPoints = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, theCubeVBOPoints);
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(theWireCubePoints), gl.STATIC_DRAW);
+}
+
+function drawCube(p, mv)
+{
+  gl.useProgram(theCubeProgram);
+
+  gl.uniformMatrix4fv( gl.getUniformLocation(theCubeProgram, "projectionMatrix"),
+  false, flatten(p));
+
+  gl.uniformMatrix4fv( gl.getUniformLocation(theCubeProgram, "modelViewMatrix"),
+  false, flatten(mv));
+
+  // Associate out shader variables with our data buffer
+  var vPosition = gl.getAttribLocation(theCubeProgram, "vPosition");
+  gl.bindBuffer(gl.ARRAY_BUFFER, theCubeVBOPoints);
+  gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(vPosition);
+
+  for (var i = 0; i < 6; i++) {
+    gl.drawArrays(gl.LINE_LOOP, i * 4, 4);
+  }
 }
