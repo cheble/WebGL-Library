@@ -1,6 +1,6 @@
 function Shading() {
   /** Vector representing the light position */
-  this.lightPosition = vec4(0.0, 1.0, 0.0, 1.0 );
+  this.lightPosition = vec4(10.0, 0.0, 0.0, 1.0 );
   /** Ambient Reflection Constant */
   this.ka = 0.9;
   /** Diffuse Reflection Constant */
@@ -152,6 +152,21 @@ Camera.prototype.stopScale = function(x, y) {
   this.scalingMove = false;
 }
 
+function Sphere() {
+
+  /** Sphere Center Position */
+  this.center = vec3(0.0, 0.0, 0.0);
+  /** Sphere Radius */
+  this.radius = 1.0;
+  /** Sphere 2-D Texture Source */
+  this.textureSrc = null;
+  /** Sphere 2-D Texture Image */
+  this.image = null;
+  /** Sphere 2-D Texture */
+  this.texture = null;
+
+}
+
 /************ GLOBALS ************/
 var canvas;
 var shading;
@@ -160,7 +175,7 @@ var camera;
 var theSphereVBOPoints;
 var theSphereProgram;
 
-var texture;
+var spheres = [];
 
 var sphereVertices = [
   vec4( 0.0,  0.0,  0.0, 1.0 ),
@@ -199,15 +214,28 @@ window.onload = function init() {
   gl.enable(gl.DEPTH_TEST);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+	gl.getExtension("EXT_frag_depth");
 
   // Configure WebGL
   gl.viewport( 0, 0, canvas.width, canvas.height );
   gl.clearColor(0.95, 0.95, 0.95, 1.0 );
 
   // init objects
+
+  var sphere1 = new Sphere();
+  sphere1.center = vec3(0.1, 0.1, 0.0);
+  sphere1.radius = 0.8;
+  sphere1.textureSrc = "earthmap2k.jpg";
+  spheres.push(sphere1);
+  var sphere2 = new Sphere();
+  sphere2.center = vec3(2.0, 2.0, 0.0);
+  sphere2.radius = 0.5;
+  sphere2.textureSrc = "moonmap1k.jpg";
+  spheres.push(sphere2);
+  initTextures();
+
   initSphere();
   initCube();
-  initTexture();
 
   render();
 
@@ -227,23 +255,30 @@ function initSphere() {
 
 }
 
-function initTexture() {
-	var image = new Image();
-	image.onload = function() {
-		texture = gl.createTexture();
-	  gl.bindTexture( gl.TEXTURE_2D, texture );
+function initTextures() {
 
-		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-	  gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image );
-	  gl.generateMipmap( gl.TEXTURE_2D );
-	  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
-	  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-	}
-	image.src = "earthmap2k.jpg";
+  for (i in spheres) {
+    var image = new Image();
+    image.sphereIndex = i;
+    
+    image.onload = function() {
+      var sphere = spheres[this.sphereIndex];
+      sphere.texture = gl.createTexture();
+  	  gl.bindTexture( gl.TEXTURE_2D, sphere.texture );
+
+  		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+  	  gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this );
+  	  gl.generateMipmap( gl.TEXTURE_2D );
+  	  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+  	  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+  	};
+
+  	image.src = spheres[i].textureSrc;
+  }
 
 }
 
-function drawSphere(p, mv, inverseMV, center, radius) {
+function drawSphere(p, mv, inverseMV, sphere) {
   gl.useProgram(theSphereProgram);
 
   // send camera variables
@@ -259,8 +294,8 @@ function drawSphere(p, mv, inverseMV, center, radius) {
   gl.uniform1f( gl.getUniformLocation(theSphereProgram, "shininess"), shading.shininess );
 
   // send object variables
-  gl.uniform3fv( gl.getUniformLocation(theSphereProgram, "center"), flatten(center));
-  gl.uniform1f( gl.getUniformLocation(theSphereProgram, "radius"), radius);
+  gl.uniform3fv( gl.getUniformLocation(theSphereProgram, "center"), flatten(sphere.center));
+  gl.uniform1f( gl.getUniformLocation(theSphereProgram, "radius"), sphere.radius);
   // Associate out shader variables with our data buffer
   var vPosition = gl.getAttribLocation(theSphereProgram, "vPosition");
   gl.bindBuffer(gl.ARRAY_BUFFER, theSphereVBOPoints);
@@ -268,14 +303,11 @@ function drawSphere(p, mv, inverseMV, center, radius) {
   gl.enableVertexAttribArray(vPosition);
   // Set texture
 	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, texture);
+	gl.bindTexture(gl.TEXTURE_2D, sphere.texture);
 	gl.uniform1i(gl.getUniformLocation(theSphereProgram, "texture"), 0);
 
   // draw
   gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-
-  // testing
-  // gl.drawArrays(gl.POINTS, 0, 4);
 }
 
 function inverseMatrix(mat) {
@@ -418,10 +450,10 @@ function render() {
   var inverseMV = mat4();
   inverseMV = inverseMatrix(mv);
 
-  var center = vec3(1.5, 1.5, 0.0);
-  var radius = 0.4;
-
-  drawSphere(camera.projM, mv, inverseMV, center, radius);
+  for (i in spheres) {
+    var sphere = spheres[i];
+    drawSphere(camera.projM, mv, inverseMV, sphere);
+  }
 
   drawCube(camera.projM, mv);
 
