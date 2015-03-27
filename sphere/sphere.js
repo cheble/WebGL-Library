@@ -38,9 +38,6 @@ function Camera(canvas) {
   this.curtQuat = [1, 0, 0, 0];
   this.scale = 1.0;
 
-  // TODO do I need this?
-  this.theInit = true;
-
   canvas.addEventListener("mousedown", function(e){
     var pos = getMousePos(e, this);
     var x = pos[0];
@@ -81,13 +78,8 @@ function Camera(canvas) {
         thisCamera.rAxis = cross(thisCamera.lastPos, curPos);
 
         var q = trackball_vtoq(thisCamera.rAngle, thisCamera.rAxis);
-// TODO by Chase: do I need this init?
-        if (thisCamera.theInit) {
-          thisCamera.curtQuat = q;
-          thisCamera.theInit = false;
-        } else {
-          thisCamera.curtQuat = multiplyQuat(q, thisCamera.curtQuat);
-        }
+
+        thisCamera.curtQuat = multiplyQuat(q, thisCamera.curtQuat);
 
         /* update position */
         thisCamera.lastPos[0] = curPos[0];
@@ -417,7 +409,7 @@ function render() {
 }
 
 
-
+// cube stuff
 
 
 var theCubeVBOPoints;
