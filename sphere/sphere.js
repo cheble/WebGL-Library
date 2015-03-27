@@ -160,8 +160,6 @@ function Sphere() {
   this.radius = 1.0;
   /** Sphere 2-D Texture Source */
   this.textureSrc = null;
-  /** Sphere 2-D Texture Image */
-  this.image = null;
   /** Sphere 2-D Texture */
   this.texture = null;
 
@@ -191,13 +189,6 @@ var squareVertices = [
   vec4( 1.0, 0.3, 0.0, 1.0 )
 ];
 
-// var squareVertices = [
-//   vec4(-0.5,-0.5, 0.0, 1.0 ),
-//   vec4(-0.5, 0.5, 0.0, 1.0 ),
-//   vec4( 0.5, 0.5, 0.0, 1.0 ),
-//   vec4( 0.5,-0.5, 0.0, 1.0 )
-// ];
-
 /************ END GLOBALS ************/
 
 
@@ -223,12 +214,12 @@ window.onload = function init() {
   // init objects
 
   var sphere1 = new Sphere();
-  sphere1.center = vec3(0.1, 0.1, 0.0);
+  sphere1.center = vec3(0.0, 0.0, 0.0);
   sphere1.radius = 0.8;
   sphere1.textureSrc = "earthmap2k.jpg";
   spheres.push(sphere1);
   var sphere2 = new Sphere();
-  sphere2.center = vec3(2.0, 2.0, 0.0);
+  sphere2.center = vec3(3.0, 0.0, 0.0);
   sphere2.radius = 0.5;
   sphere2.textureSrc = "moonmap1k.jpg";
   spheres.push(sphere2);
@@ -260,7 +251,7 @@ function initTextures() {
   for (i in spheres) {
     var image = new Image();
     image.sphereIndex = i;
-    
+
     image.onload = function() {
       var sphere = spheres[this.sphereIndex];
       sphere.texture = gl.createTexture();
