@@ -1,10 +1,10 @@
 function Shading() {
   /** Vector representing the light position */
-  this.lightPosition = vec4(0.0, 0.0, 0.1, 0.0 );
+  this.lightPosition = vec4(0.0, 0.0, 0.0, 1.0 );
   /** Ambient Reflection Constant */
   this.ka = 0.5;
   /** Diffuse Reflection Constant */
-  this.kd = 0.5;
+  this.kd = 0.8;
   /** Specular Reflection Constant */
   this.ks = 0.5;
   /**  Material Shininess Constant */
@@ -395,7 +395,7 @@ function render() {
   var inverseMV = mat4();
   inverseMV = inverseMatrix(mv);
 
-  var center = vec3(0.5, 0.5, 0.0)
+  var center = vec3(1.5, 1.5, 0.0)
   var radius = 0.4;
 
   var aspect = canvas.width * 1.0 / canvas.height;

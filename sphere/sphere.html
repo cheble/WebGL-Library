@@ -51,10 +51,10 @@ main()
 
 	vec3 pPrime = (modelViewMatrix * vec4(center, 1.0)).xyz;			// point of center after mv transformation
 
-	// vec3 v = vec3(0.0, 0.0, 0.0) - pPrime;					// vector from center to eye
+	vec3 v = vec3(0.0, 0.0, 0.0) - pPrime;					// vector from center to eye
+  // vec3 v = pPrime - vec3(0.0, 0.0, 0.0);					// vector from center to eye
   //
 	// vec3 vPrime = vec3(-v.y, v.x, 0.0);						// vector orthagonal to v
-  vec3 v = pPrime - vec3(0.0, 0.0, 0.0);					// vector from center to eye
 
 	vec3 vPrime = vec3(0.0, 0.0, 1.0);
 	if (v == vec3(0.0, 0.0, 0.0) || v.z == 0.0) {
@@ -93,7 +93,7 @@ main()
 	fCenter = pPrime;										// center position without projection
 
 	E = normalize( - (tPrime).xyz);							// vertex from the position to the eye
-  L = normalize((projectionMatrix * modelViewMatrix * lightPosition).xyz);	// vetex position of the light
+  L = normalize((projectionMatrix * modelViewMatrix * lightPosition).xyz - (tPrime).xyz);	// vetex position of the light
 }
 </script>
 
@@ -173,7 +173,7 @@ main()
 </head>
 
 <body>
-<canvas id="gl-canvas" width="512" height="512">
+<canvas id="gl-canvas" width="1024" height="1024">
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>
 </body>
