@@ -215,7 +215,7 @@ window.onload = function init() {
 
   var sphere1 = new Sphere();
   sphere1.center = vec3(0.0, 0.0, 0.0);
-  sphere1.radius = 0.8;
+  sphere1.radius = 1.0;
   sphere1.textureSrc = "earthmap2k.jpg";
   spheres.push(sphere1);
   var sphere2 = new Sphere();

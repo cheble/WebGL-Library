@@ -12,7 +12,7 @@ uniform mat4 projectionMatrix;
 void
 main()
 {
-     gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+  gl_Position = projectionMatrix * modelViewMatrix * vPosition;
 }
 </script>
 
@@ -22,7 +22,7 @@ precision mediump float;
 void
 main()
 {
-	gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+  gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
 </script>
 
@@ -47,51 +47,48 @@ uniform mat4 projectionMatrix;
 void
 main()
 {
-	vec3 pPrime = (modelViewMatrix * vec4(center, 1.0)).xyz;			// point of center after mv transformation
+  vec3 pPrime = (modelViewMatrix * vec4(center, 1.0)).xyz;    // point of center after mv transformation
 
-	vec3 v = vec3(0.0, 0.0, 0.0) - pPrime;					// vector from center to eye
-  // vec3 v = pPrime - vec3(0.0, 0.0, 0.0);					// vector from center to eye
-  //
-	// vec3 vPrime = vec3(-v.y, v.x, 0.0);						// vector orthagonal to v
+  vec3 v = vec3(0.0, 0.0, 0.0) - pPrime;                       // vector from center to eye
 
-	vec3 vPrime = vec3(0.0, 0.0, 1.0);
-	if (v == vec3(0.0, 0.0, 0.0) || v.z == 0.0) {
-		vPrime = vec3(0.0, 0.0, 1.0);
-	} else {
-		vPrime = vec3(1, 1, -1.0 * (v.x + v.y) / v.z);//vec3(-v.y, v.x, 0.0);						// vector orthagonal to v
-	}
+  vec3 vPrime;
+  if (v == vec3(0.0, 0.0, 0.0) || v.z == 0.0) {
+    vPrime = vec3(0.0, 0.0, 1.0);
+  } else {
+    vPrime = vec3(1, 1, -1.0 * (v.x + v.y) / v.z);      // vector orthagonal to v
+  }
 
-	if(vPosition.x == 1.0){
+  if(vPosition.x == 1.0){
 
-		vPrime = cross(v, vPrime);							// orthagonal to v and coplanar to previous vPrime
+    vPrime = cross(v, vPrime);              // orthagonal to v and coplanar to previous vPrime
 
-	} else if (vPosition.x == 2.0){
+  } else if (vPosition.x == 2.0){
 
-		vPrime = cross(v, vPrime);
-		vPrime = cross(v, vPrime);							// orthagonal to v and coplanar to previous vPrimes
+    vPrime = cross(v, vPrime);
+    vPrime = cross(v, vPrime);              // orthagonal to v and coplanar to previous vPrimes
 
-	} else if (vPosition.x == 3.0){
+  } else if (vPosition.x == 3.0){
 
-		vPrime = cross(v, vPrime);
-		vPrime = cross(v, vPrime);
-		vPrime = cross(v, vPrime);							// orthagonal to v and coplanar to previous vPrimes
+    vPrime = cross(v, vPrime);
+    vPrime = cross(v, vPrime);
+    vPrime = cross(v, vPrime);              // orthagonal to v and coplanar to previous vPrimes
 
-	}
+  }
 
-	vec3 t = pPrime + normalize(vPrime)*radius*sqrt(2.0);// vertex position of the square
+  vec3 t = pPrime + normalize(vPrime)*radius*sqrt(2.0);// vertex position of the square
 
-	vec4 tPrime = projectionMatrix * vec4(t, 1.0);			// vertex position with the projection applied
+  vec4 tPrime = projectionMatrix * vec4(t, 1.0);      // vertex position with the projection applied
 
   gl_Position = tPrime;
 
-	vec3 cirEdge = normalize(vPrime)*radius;
-	fRadius = length(cirEdge);
+  vec3 cirEdge = normalize(vPrime)*radius;
+  fRadius = length(cirEdge);
 
-	fPosition = t;											// vertex position without projection
-	fCenter = pPrime;										// center position without projection
+  fPosition = t;                      // vertex position without projection
+  fCenter = pPrime;                    // center position without projection
 
-	E = normalize( - (tPrime).xyz);							// vertex from the position to the eye
-  L = normalize((projectionMatrix * modelViewMatrix * lightPosition).xyz - (tPrime).xyz);	// vetex position of the light
+  E = normalize( - (tPrime).xyz);              // vertex from the position to the eye
+  L = normalize((projectionMatrix * modelViewMatrix * lightPosition).xyz - (tPrime).xyz);  // vetex position of the light
 }
 </script>
 
@@ -121,13 +118,13 @@ main()
 {
   gl_FragDepthEXT = gl_FragCoord.z;
 
-	vec4 fColor = vec4(1.0, 0.0, 0.0, 1.0);
+  vec4 fColor = vec4(1.0, 0.0, 0.0, 1.0);
 
   vec3 dif = fPosition - fCenter;
-	float distance = length(dif);							// distance from the center of the circle
+  float distance = length(dif);              // distance from the center of the circle
 
   if (distance > fRadius) {
-    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);			// point is outside of the circle
+    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);      // point is outside of the circle
     discard;
     return;
   }
@@ -136,26 +133,26 @@ main()
   float y = fPosition.y - fCenter.y;
   float z = - sqrt(fRadius*fRadius - x * x - y * y);
 
-  vec3 norm = normalize(vec3(x, y, z));					// normal vector of the circle
+  vec3 norm = normalize(vec3(x, y, z));          // normal vector of the circle
 
 
 
   // Text Cube???
-	// vec4 spherePos = vec4(fPosition.x, fPosition.y, z, 1.0);
+  // vec4 spherePos = vec4(fPosition.x, fPosition.y, z, 1.0);
   //
-	// vec4 posEye = projectionMatrix * vec4(fPosition, 1.0);
-	// //posEye.z = z;
-	// vec4 centerEye = projectionMatrix * vec4(fCenter, 1.0);
+  // vec4 posEye = projectionMatrix * vec4(fPosition, 1.0);
+  // //posEye.z = z;
+  // vec4 centerEye = projectionMatrix * vec4(fCenter, 1.0);
   //
-	// vec4 normTexture = (invMV) * posEye - (invMV) * centerEye;
-	// //normTexture = vec4(norm, 1.0) * (invMV) - vec4(fCenter, 1.0) * (invMV);
-	// normTexture = normalize(normTexture);
+  // vec4 normTexture = (invMV) * posEye - (invMV) * centerEye;
+  // //normTexture = vec4(norm, 1.0) * (invMV) - vec4(fCenter, 1.0) * (invMV);
+  // normTexture = normalize(normTexture);
   //
   // fColor = vec4(1.0, 1.0, 1.0, 1.0);
-	// vec4 texColor = textureCube(texMap, norm);
-	// if(texColor.a == 1.0){
-	// 	fColor = texColor;
-	// }
+  // vec4 texColor = textureCube(texMap, norm);
+  // if(texColor.a == 1.0){
+  //   fColor = texColor;
+  // }
 
 
 
