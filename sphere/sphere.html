@@ -47,8 +47,6 @@ uniform mat4 projectionMatrix;
 void
 main()
 {
-	gl_PointSize = 10.0;
-
 	vec3 pPrime = (modelViewMatrix * vec4(center, 1.0)).xyz;			// point of center after mv transformation
 
 	vec3 v = vec3(0.0, 0.0, 0.0) - pPrime;					// vector from center to eye
