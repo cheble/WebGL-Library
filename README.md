@@ -16,7 +16,8 @@ So far, I have used resources from the following sources:
 
 <b>TODO</b>
 - [ ] use Object-Orient for sphere
-- [ ] extract shaders into a seperate file
+- [ ] make util js file for common functions
+- [ ] extract shaders into a separate file
 - [ ] move examples to example folder
 - [ ] delete testing files/folders
 - [ ] triangle model library for using 3d data
