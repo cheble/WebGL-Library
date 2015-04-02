@@ -27,7 +27,7 @@ utils.loadShader = function(file, type) {
 
     $.ajax({
         async: false, // need to wait... todo: deferred?
-        url: "shaders/" + file, //todo: use global config for shaders folder?
+        url: file, //todo: use global config for shaders folder?
         success: function(result) {
            cache = {script: result, type: type};
         }
