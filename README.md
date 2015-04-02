@@ -11,3 +11,15 @@ So far, I have used resources from the following sources:
   <li>My CSCE 470 Course by Hongfeng Yu - MV.js</li>
   <li>My CSCE 470 Project https://github.com/cheble/Solar-System-Model-WebGL - various code</li>
 </ul>
+
+
+
+<b>TODO</b>
+- [ ] use Object-Orient for sphere
+- [ ] extract shaders into a seperate file
+- [ ] move examples to example folder
+- [ ] delete testing files/folders
+- [ ] triangle model library for using 3d data
+- [ ] image/text filters
+- [ ] image/text animations
+- [ ] create racing game similar to <a href="http://www.gamefaqs.com/gameboy/585935-super-off-road">Super Off Road</a>
