@@ -234,8 +234,7 @@ window.onload = function init() {
 
 function initSphere() {
   // Load shaders and initialize attribute buffers
-  // theSphereProgram = initShaders(gl, "sphere-vertex-shader", "sphere-fragment-shader");
-  theSphereProgram = utils.addShaderProg(gl, 'sphere_vertex.shader', 'sphere_frag.shader');
+  theSphereProgram = initShaders(gl, "sphere-vertex-shader", "sphere-fragment-shader");
   gl.useProgram(theSphereProgram);
 
   // Create VBOs and load the data into the VBOs

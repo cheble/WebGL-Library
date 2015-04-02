@@ -34,7 +34,7 @@ utils.loadShader = function(file, type) {
     });
 
     // store in global cache
-    uilts.allShaders[file] = cache;
+    utils.allShaders[file] = cache;
 };
 
 utils.getShader = function (gl, id) {
