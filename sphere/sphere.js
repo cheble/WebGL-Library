@@ -48,6 +48,11 @@ function Camera(canvas) {
   canvas.addEventListener("touchend", function(e) { self.cameraStop(e); });
 }
 
+Camera.prototype.setAspect = function(theCanvas) {
+  this.aspect = theCanvas.width * 1.0 / theCanvas.height;
+  this.projM = perspective(this.fovy, this.aspect, this.zNear, this.zFar);
+}
+
 Camera.prototype.cameraStart = function(e) {
   var pos = getPointEventPos(e, canvas);
   var x = pos[0];
@@ -214,12 +219,10 @@ window.onload = function init() {
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 	gl.getExtension("EXT_frag_depth");
 
-  resizeCanvas(canvas);
-  console.log(canvas.width);
-  console.log(canvas.height);
-
   shading = new Shading(canvas);
   camera = new Camera(canvas);
+
+  resizeCanvas(camera, canvas);
 
   // Configure WebGL
   gl.viewport( 0, 0, canvas.width, canvas.height );
@@ -443,7 +446,7 @@ function getPointEventPos(e, canvas)
   return t;
 }
 
-function resizeCanvas(theCanvas) {
+function resizeCanvas(theCamera, theCanvas) {
    // only change the size of the canvas if the size it's being displayed
    // has changed.
    var width = theCanvas.clientWidth;
@@ -453,6 +456,7 @@ function resizeCanvas(theCanvas) {
      // Change the size of the canvas to match the size it's being displayed
      theCanvas.width = width;
      theCanvas.height = height;
+     theCamera.setAspect(theCanvas);
    }
 
 }
