@@ -204,18 +204,22 @@ var squareVertices = [
 
 window.onload = function init() {
   canvas = document.getElementById("gl-canvas");
-  shading = new Shading(canvas);
-  camera = new Camera(canvas);
 
   gl = WebGLUtils.setupWebGL(canvas);
   if (!gl) {
     alert( "WebGL isn't available" );
   }
-
   gl.enable(gl.DEPTH_TEST);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 	gl.getExtension("EXT_frag_depth");
+
+  resizeCanvas(canvas);
+  console.log(canvas.width);
+  console.log(canvas.height);
+
+  shading = new Shading(canvas);
+  camera = new Camera(canvas);
 
   // Configure WebGL
   gl.viewport( 0, 0, canvas.width, canvas.height );
@@ -437,6 +441,20 @@ function getPointEventPos(e, canvas)
   var t = vec2(clip_x, clip_y);
 
   return t;
+}
+
+function resizeCanvas(theCanvas) {
+   // only change the size of the canvas if the size it's being displayed
+   // has changed.
+   var width = theCanvas.clientWidth;
+   var height = theCanvas.clientHeight;
+   if (theCanvas.width != width ||
+     theCanvas.height != height) {
+     // Change the size of the canvas to match the size it's being displayed
+     theCanvas.width = width;
+     theCanvas.height = height;
+   }
+
 }
 
 function render() {
