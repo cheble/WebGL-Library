@@ -13,7 +13,7 @@ function Shading() {
 }
 
 function Camera(canvas) {
-  var thisCamera = this;
+  var self = this;
 
   // Projection transformation properties
   this.fovy = 45.0;
@@ -38,33 +38,33 @@ function Camera(canvas) {
   this.curtQuat = [1, 0, 0, 0];
   this.scale = 1.0;
 
-  canvas.addEventListener("mousedown", function(e){ cameraStart(e, thisCamera); });
-  canvas.addEventListener("touchstart", function(e){ cameraStart(e, thisCamera); });
+  canvas.addEventListener("mousedown", function(e){ self.cameraStart(e); });
+  canvas.addEventListener("touchstart", function(e){ self.cameraStart(e); });
 
-  canvas.addEventListener("mousemove", function(e){ cameraMove(e, thisCamera); });
-  canvas.addEventListener("touchmove", function(e){ cameraMove(e, thisCamera); });
+  canvas.addEventListener("mousemove", function(e){ self.cameraMove(e); });
+  canvas.addEventListener("touchmove", function(e){ self.cameraMove(e); });
 
-  canvas.addEventListener("mouseup", function(e) { cameraStop(e, thisCamera); });
-  canvas.addEventListener("touchend", function(e) { cameraStop(e, thisCamera); });
+  canvas.addEventListener("mouseup", function(e) { self.cameraStop(e); });
+  canvas.addEventListener("touchend", function(e) { self.cameraStop(e); });
 }
 
-function cameraStart(e, theCamera) {
-  e.preventDefault();
-  var pos = getMousePos(e, canvas);
+Camera.prototype.cameraStart = function(e) {
+  var pos = getPointEventPos(e, canvas);
   var x = pos[0];
   var y = pos[1];
 
-  if (e.button == 0) {
-    theCamera.startMotion(x, y);
+  if (e.button == 0 || e.touches) {
+    this.startMotion(x, y);
   } else if (e.button == 1) {
-    theCamera.startScale(x, y);
+    this.startScale(x, y);
   }
 
   // requestAnimFrame( render );
-}
-function cameraMove(e, theCamera) {
   e.preventDefault();
-  var pos = getMousePos(e, canvas);
+}
+
+Camera.prototype.cameraMove = function(e) {
+  var pos = getPointEventPos(e, canvas);
   var x = pos[0];
   var y = pos[1];
 
@@ -74,62 +74,63 @@ function cameraMove(e, theCamera) {
   /* compute position on hemisphere */
   trackball_ptov(x, y, curPos);
 
-  if(theCamera.trackingMove)
+  if(this.trackingMove)
   {
     /*
     * compute the change in position on the hemisphere
     */
-    dx = curPos[0] - theCamera.lastPos[0];
-    dy = curPos[1] - theCamera.lastPos[1];
-    dz = curPos[2] - theCamera.lastPos[2];
+    dx = curPos[0] - this.lastPos[0];
+    dy = curPos[1] - this.lastPos[1];
+    dz = curPos[2] - this.lastPos[2];
     if (dx || dy || dz)
     {
       /* compute theta and cross product */
-      theCamera.rAngle = 90.0 * Math.sqrt(dx*dx + dy*dy + dz*dz) / 180.0 * Math.PI;
-      theCamera.rAxis = cross(theCamera.lastPos, curPos);
+      this.rAngle = 90.0 * Math.sqrt(dx*dx + dy*dy + dz*dz) / 180.0 * Math.PI;
+      this.rAxis = cross(this.lastPos, curPos);
 
-      var q = trackball_vtoq(theCamera.rAngle, theCamera.rAxis);
+      var q = trackball_vtoq(this.rAngle, this.rAxis);
 
-      theCamera.curtQuat = multiplyQuat(q, theCamera.curtQuat);
+      this.curtQuat = multiplyQuat(q, this.curtQuat);
 
       /* update position */
-      theCamera.lastPos[0] = curPos[0];
-      theCamera.lastPos[1] = curPos[1];
-      theCamera.lastPos[2] = curPos[2];
+      this.lastPos[0] = curPos[0];
+      this.lastPos[1] = curPos[1];
+      this.lastPos[2] = curPos[2];
     }
   }
 
-  if (theCamera.scalingMove) {
-    if (theCamera.curtX != x || theCamera.curtY != y) {
+  if (this.scalingMove) {
+    if (this.curtX != x || this.curtY != y) {
 
-      theCamera.scale += (theCamera.curtY * 1.0 - y)/2.0 * 1.3 * theCamera.scale; // 2.0 -
+      this.scale += (this.curtY * 1.0 - y)/2.0 * 1.3 * this.scale; // 2.0 -
       // the
       // windows
       // height
-      if (theCamera.scale <= 0.0) {
-        theCamera.scale = 0.00000001;
+      if (this.scale <= 0.0) {
+        this.scale = 0.00000001;
       }
 
-      theCamera.curtX = x;
-      theCamera.curtY = y;
+      this.curtX = x;
+      this.curtY = y;
     }
   }
 
-  if (theCamera.scalingMove || theCamera.trackingMove) {
+  if (this.scalingMove || this.trackingMove) {
     // requestAnimFrame( render );
   }
-}
-function cameraStop(e, theCamera) {
   e.preventDefault();
-  var pos = getMousePos(e, canvas);
+}
+
+Camera.prototype.cameraStop = function(e) {
+  var pos = getPointEventPos(e, canvas);
   var x = pos[0];
   var y = pos[1];
-
-  if (e.button == 0) {
-    theCamera.stopMotion(x, y);
+  if (e.button == 0 || e.touches) {
+    this.stopMotion(x, y);
   } else if (e.button == 1) {
-    theCamera.stopScale(x, y);
+    this.stopScale(x, y);
   }
+  e.preventDefault();
 }
 
 Camera.prototype.startMotion = function(x, y) {
@@ -423,11 +424,14 @@ function invq(a)
   return( scalev( 1.0/dot(a, a) , vec4(a[0], negate(a.slice(1,4)))) );
 }
 
-function getMousePos(e, canvas)
+function getPointEventPos(e, canvas)
 {
-  var event = e || window.event;
-  var client_x_r = event.clientX - canvas.offsetLeft;
-  var client_y_r = event.clientY - canvas.offsetTop;
+  var ePos = {x:0, y:0};
+  ePos.x = e.clientX || e.touches[0].clientX || e.changedTouches[0].clientX;
+  ePos.y = e.clientY || e.touches[0].clientY || e.changedTouches[0].clientY;
+
+  var client_x_r = ePos.x - canvas.offsetLeft;
+  var client_y_r = ePos.y - canvas.offsetTop;
   var clip_x = -1 + 2 * client_x_r / canvas.width;
   var clip_y = -1 + 2 * (canvas.height - client_y_r) / canvas.height;
   var t = vec2(clip_x, clip_y);
