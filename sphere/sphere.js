@@ -49,6 +49,7 @@ function Camera(canvas) {
 }
 
 function cameraStart(e, theCamera) {
+  e.preventDefault();
   var pos = getMousePos(e, canvas);
   var x = pos[0];
   var y = pos[1];
@@ -62,6 +63,7 @@ function cameraStart(e, theCamera) {
   // requestAnimFrame( render );
 }
 function cameraMove(e, theCamera) {
+  e.preventDefault();
   var pos = getMousePos(e, canvas);
   var x = pos[0];
   var y = pos[1];
@@ -118,6 +120,7 @@ function cameraMove(e, theCamera) {
   }
 }
 function cameraStop(e, theCamera) {
+  e.preventDefault();
   var pos = getMousePos(e, canvas);
   var x = pos[0];
   var y = pos[1];
