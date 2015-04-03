@@ -95,7 +95,9 @@ main()
 <script id="sphere-fragment-shader" type="x-shader/x-fragment">
 precision mediump float;
 
-#extension GL_EXT_frag_depth : enable
+#ifdef GL_EXT_frag_depth
+	#extension GL_EXT_frag_depth : enable
+#endif
 
 varying vec3 fPosition;
 varying vec3 fCenter;
@@ -116,7 +118,10 @@ uniform sampler2D texture;
 void
 main()
 {
-  gl_FragDepthEXT = gl_FragCoord.z;
+
+  #ifdef GL_EXT_frag_depth
+    gl_FragDepthEXT = gl_FragCoord.z;
+  #endif
 
   vec4 fColor = vec4(1.0, 0.0, 0.0, 1.0);
 
@@ -124,8 +129,12 @@ main()
   float distance = length(dif);              // distance from the center of the circle
 
   if (distance > fRadius) {
-    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);      // point is outside of the circle
-    discard;
+    // point is outside of the circle
+    #ifdef GL_EXT_frag_depth
+			discard;
+		#else
+			gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+		#endif
     return;
   }
 
