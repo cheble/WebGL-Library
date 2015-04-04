@@ -16,7 +16,7 @@ So far, I have used resources from the following sources:
 
 <b>TODO</b>
 - [ ] use Object-Orient for sphere
-- [ ] make util js file for common functions
+- [ ] implement up vector for sphere/cube (and front vector)
 - [ ] extract shaders into a separate file
 - [ ] move examples to example folder
 - [ ] delete testing files/folders
