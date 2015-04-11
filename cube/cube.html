@@ -14,7 +14,7 @@ varying vec3 fCenter;
 varying vec3 fUp;
 varying vec3 fFront;
 varying vec3 fSide;
-varying vec3 fNorm;
+varying vec3 cirNorm;
 
 uniform vec4 lightPosition;
 
@@ -28,39 +28,40 @@ uniform mat4 projectionMatrix;
 void
 main()
 {
-  vec3 side = normalize(cross(-front, up));
-  vec3 unitV;  // calculated unit cube vertex
-  unitV = (vPosition.x*side + vPosition.y*up + vPosition.z*front);
-
+  // side axis (to the right of front)
+  vec3 side = normalize(cross(up, front));
+  // unit cube vertex
+  vec3 unitV = (vPosition.x*side + vPosition.y*up + vPosition.z*front);
+  // model vertex
   vec3 modelV = center + (1.0/2.0) * length * unitV;
-  vec4 fPosition = projectionMatrix * modelViewMatrix * vec4(modelV, 1.0);
+  // modelview vertex
+  vec4 mvV = modelViewMatrix * vec4(modelV, 1.0);
 
-  gl_Position = fPosition;
+  gl_Position = projectionMatrix * mvV;
 
-  fCenter = (modelViewMatrix * vec4(center, 1.0)).xyz;
-  fSide = (modelViewMatrix * vec4(side, 0.0)).xyz;
-  fUp = (modelViewMatrix * vec4(up, 0.0)).xyz;
-  fFront = (modelViewMatrix * vec4(front, 0.0)).xyz;
+  // calc fragment shader parameters (ignore projection matrix)
+  fCenter = (modelViewMatrix * vec4(center, 1.0)).xyz;  // modelview cube center
+  fUp = (modelViewMatrix * vec4(up, 0.0)).xyz;          // modelview up axis
+  fFront = (modelViewMatrix * vec4(front, 0.0)).xyz;    // modelview front axis
+  fSide = (modelViewMatrix * vec4(side, 0.0)).xyz;      // modelview side axis
+  cirNorm = (mvV).xyz - fCenter;                        // spherical normal
+  E =  - (mvV).xyz;                                     // position to eye
+  L = (modelViewMatrix * lightPosition).xyz - (mvV).xyz;// position of light
 
-  fNorm = (modelViewMatrix * vec4(modelV, 1.0)).xyz - fCenter;
-
-  E =  - (fPosition).xyz;              // vertex from the position to the eye
-  L = (projectionMatrix * modelViewMatrix * lightPosition).xyz - (fPosition).xyz;  // vetex position of the light
 }
 </script>
 
 <script id="cube-fragment-shader" type="x-shader/x-fragment">
 precision mediump float;
 
-// varying vec3 fPosition;
 varying vec3 fCenter;
 varying vec3 fUp;
 varying vec3 fFront;
 varying vec3 fSide;
-varying vec3 L, E;
+varying vec3 E;
+varying vec3 L;
+varying vec3 cirNorm;
 
-varying vec3 fNorm;
-uniform float scale;
 uniform float ka;
 uniform float kd;
 uniform float ks;
@@ -77,31 +78,35 @@ main()
   vec4 fColor = vec4(1.0, 0.0, 0.0, 1.0);
 
   // calc normal based on circular normal and up/side/front vectors
-  float dUp = abs(dot(fNorm, fUp));
-  float dFront = abs(dot(fNorm, fFront));
-  float dSide = abs(dot(fNorm, fSide));
+  float dUp = abs(dot(cirNorm, fUp));
+  float dFront = abs(dot(cirNorm, fFront));
+  float dSide = abs(dot(cirNorm, fSide));
 
-  vec3 norm = fNorm;
+  vec3 norm = cirNorm;
   if (dUp > dFront && dUp > dSide) {
-    if (dot(fNorm, fUp) > 0.0) {
+    if (dot(cirNorm, fUp) > 0.0) {
       norm = fUp;
     } else {
       norm = -fUp;
     }
   } else if (dFront > dUp && dFront > dSide) {
-    if (dot(fNorm, fFront) > 0.0) {
+    if (dot(cirNorm, fFront) > 0.0) {
       norm = fFront;
     } else {
       norm = -fFront;
     }
   } else if (dSide > dUp && dSide > dFront) {
-    if (dot(fNorm, fSide) > 0.0) {
+    if (dot(cirNorm, fSide) > 0.0) {
       norm = fSide;
     } else {
       norm = -fSide;
     }
   }
-  norm = normalize((projectionMatrix * vec4(norm, 0.0)).xyz);
+
+  vec3 NN = normalize(norm);
+  vec3 LL = normalize(L);
+  vec3 EE = normalize(E);
+  vec3 HH = normalize( LL + EE );
 
   // Text Cube???
   // vec4 spherePos = vec4(fPosition.x, fPosition.y, z, 1.0);
@@ -120,21 +125,15 @@ main()
   //   fColor = texColor;
   // }
 
-
-  vec3 LL = normalize(L);
-  vec3 EE = normalize(E);
-
-  vec3 H = normalize( LL + EE );
+  // calculate phong shading elements
   float ambient = ka;
+  float diffuse = kd * max( dot(NN, LL), 0.0 );
+  float specular = ks * pow( max(dot(NN, HH), 0.0), shininess );
+  if( dot(LL, NN) < 0.0 ) specular = 0.0;
 
-  float diffuse = kd * max( dot(LL, norm), 0.0 );
-  float specular = ks * pow( max(dot(norm, H), 0.0), shininess );
-
-  if( dot(LL, norm) < 0.0 ) specular = 0.0;
-
+  // apply phong shading to color
   fColor = fColor * (ambient + diffuse) + vec4(1.0) * specular;
   fColor.a = 1.0;
-
   gl_FragColor = fColor;
 
 

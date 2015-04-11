@@ -77,8 +77,8 @@ window.onload = function init() {
 	gl.getExtension("EXT_frag_depth");
 
   shading = new Shading(canvas);
-  shading.lightPosition = vec4(1.0, 0.1, 1.0, 1.0 );
-  shading.ka = 0.5;
+  shading.lightPosition = vec4(1.0, 0.5, 1.0, 1.0 );
+  shading.ka = 0.2;
   camera = new Camera(canvas);
 
   resizeCanvas(camera, canvas);
@@ -93,17 +93,21 @@ window.onload = function init() {
 
   // test objects
   var cube1 = new Cube();
-  cube1.center = vec3(0.0, 0.0, 0.0);
+  cube1.center = vec3(0.0, 0.25, 0.0);
   cube1.length = 0.5;
   cubes.push(cube1);
   var cube2 = new Cube();
-  cube2.center = vec3(2.0, 0.0, 0.0);
+  cube2.center = vec3(2.0, 0.5, 0.0);
   cube2.length = 1.0;
   cubes.push(cube2);
   var cube3 = new Cube();
   cube3.center = vec3(shading.lightPosition);
   cube3.length = 0.05;
   cubes.push(cube3);
+  var cube4 = new Cube();
+  cube4.center = vec3(0.0, -5.0, 0.0);
+  cube4.length = 10.0;
+  cubes.push(cube4);
 
   render();
 
