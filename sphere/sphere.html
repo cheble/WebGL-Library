@@ -17,44 +17,41 @@ varying vec3 fPosition;
 varying float fRadius;
 varying vec3 E;
 varying vec3 L;
-varying vec3 cirNorm;
 
-void
-main()
-{
+
+vec3 orthagonalSquare(vec3 center, float vertexId) {
+  vec3 v = vec3(0.0, 0.0, 0.0) - center;         // vector from center to eye
+  vec3 corner;                                    // vector to square corner
+  corner = vec3(1, 1, -1.0 * (v.x + v.y) / v.z);  // vector orthagonal to v
+  if(vertexId == 1.0){
+    corner = cross(v, corner);              // orthagonal to v and coplanar to previous vPrime
+  } else if (vertexId == 2.0){
+    corner = cross(v, corner);
+    corner = cross(v, corner);              // orthagonal to v and coplanar to previous vPrimes
+  } else if (vertexId == 3.0){
+    corner = cross(v, corner);
+    corner = cross(v, corner);
+    corner = cross(v, corner);              // orthagonal to v and coplanar to previous vPrimes
+  }
+  return corner;
+}
+
+void main() {
   // modelview center
-  vec3 mvCenter = (modelViewMatrix * vec4(center, 1.0)).xyz;  // modelview cube center
+  vec3 mvCenter = (modelViewMatrix * vec4(center, 1.0)).xyz;
   // calculate square orthagonal to the eye
-  vec3 v = vec3(0.0, 0.0, 0.0) - mvCenter;          // vector from center to eye
-  vec3 cornerV;                                      // vector to square corner
-  if (v == vec3(0.0, 0.0, 0.0) || v.z == 0.0) {
-    cornerV = vec3(0.0, 0.0, 1.0);
-  } else {
-    cornerV = vec3(1, 1, -1.0 * (v.x + v.y) / v.z);  // vector orthagonal to v
-  }
-  if(vPosition.x == 1.0){
-    cornerV = cross(v, cornerV);              // orthagonal to v and coplanar to previous vPrime
-  } else if (vPosition.x == 2.0){
-    cornerV = cross(v, cornerV);
-    cornerV = cross(v, cornerV);              // orthagonal to v and coplanar to previous vPrimes
-  } else if (vPosition.x == 3.0){
-    cornerV = cross(v, cornerV);
-    cornerV = cross(v, cornerV);
-    cornerV = cross(v, cornerV);              // orthagonal to v and coplanar to previous vPrimes
-  }
+  vec3 cornerV = orthagonalSquare(mvCenter, vPosition.x);
   // modelview vertex
   vec4 mvV = vec4(mvCenter + normalize(cornerV)*radius*sqrt(2.0), 1.0);
 
   gl_Position = projectionMatrix * mvV;
 
   // calc fragment shader parameters (ignore projection matrix)
-  vec3 cirEdge = normalize(cornerV)*radius;
-  fRadius = length(cirEdge);
-  fPosition = mvV.xyz;                                      // modelveiw vertex
-  fCenter = mvCenter;  // modelview cube center
-  cirNorm = mvV.xyz - fCenter;                        // spherical normal
-  E =  - (mvV).xyz;                                     // position to eye
-  L = (modelViewMatrix * lightPosition).xyz - mvV.xyz;      // position of light
+  fRadius = length( normalize(cornerV)*radius );      // modelview radius
+  fPosition = mvV.xyz;                                // modelveiw vertex
+  fCenter = mvCenter;                                 // modelview cube center
+  E =  - (mvV).xyz;                                   // position to eye
+  L = (modelViewMatrix * lightPosition).xyz - mvV.xyz;// position of light
 }
 </script>
 
@@ -66,7 +63,6 @@ varying vec3 fPosition;
 varying float fRadius;
 varying vec3 E;
 varying vec3 L;
-varying vec3 cirNorm;
 
 uniform float ka;
 uniform float kd;
@@ -78,9 +74,9 @@ uniform mat4 invMV;
 uniform mat4 projectionMatrix;
 uniform sampler2D texture;
 
-// #ifdef GL_EXT_frag_depth
-// 	#extension GL_EXT_frag_depth : enable
-// #endif
+#ifdef GL_EXT_frag_depth
+	#extension GL_EXT_frag_depth : enable
+#endif
 
 void
 main()
@@ -92,26 +88,20 @@ main()
   float distance = length(dif);              // distance from the center of the circle
   if (distance > fRadius) {
     // point is outside of the circle
-    // #ifdef GL_EXT_frag_depth
-			discard;
-		// #else
-		// 	gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-		// #endif
+		discard;
     return;
   }
   float x = fPosition.x - fCenter.x;
   float y = fPosition.y - fCenter.y;
   float z = sqrt(fRadius*fRadius - x * x - y * y);
-  // #ifdef GL_EXT_frag_depth
-  //   gl_FragDepthEXT = gl_FragCoord.z;
-  // #endif
+  #ifdef GL_EXT_frag_depth
+    gl_FragDepthEXT = gl_FragCoord.z;
+  #endif
 
   vec3 NN = normalize(vec3(x, y, z));
   vec3 LL = normalize(L);
   vec3 EE = normalize(E);
   vec3 HH = normalize( LL + EE );
-
-
 
   // Text Cube???
   // vec4 spherePos = vec4(fPosition.x, fPosition.y, z, 1.0);
@@ -129,8 +119,6 @@ main()
   // if(texColor.a == 1.0){
   //   fColor = texColor;
   // }
-
-
 
   /**************** 2D TEXTURE ****************/
   /* texture parameters */
