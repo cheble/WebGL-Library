@@ -88,27 +88,22 @@ window.onload = function init() {
   gl.clearColor(0.05, 0.05, 0.05, 1.0 );
 
   // init objects
+  // initTextures();
+  initBaseCube();
+
+  // test objects
   var cube1 = new Cube();
   cube1.center = vec3(0.0, 0.0, 0.0);
-  // cube1.up = vec3(0.0, 0.0, 0.0);
-  // cube1.front = vec3(0.0, 0.0, 0.0);
   cube1.length = 0.5;
   cubes.push(cube1);
   var cube2 = new Cube();
   cube2.center = vec3(2.0, 0.0, 0.0);
-  // cube2.up = vec3(0.0, 0.0, 0.0);
-  // cube2.front = vec3(0.0, 0.0, 0.0);
   cube2.length = 1.0;
   cubes.push(cube2);
   var cube3 = new Cube();
   cube3.center = vec3(shading.lightPosition);
-  // cube3.up = vec3(0.0, 0.0, 0.0);
-  // cube3.front = vec3(0.0, 0.0, 0.0);
   cube3.length = 0.05;
   cubes.push(cube3);
-  // initTextures();
-
-  initBaseCube();
 
   render();
 
@@ -188,7 +183,6 @@ function drawCube(p, mv, inverseMV, cube) {
   // draw
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, theCubeVBOIndexBuffer);
   gl.drawElements(gl.TRIANGLES, baseCubeFaces.length, gl.UNSIGNED_SHORT, 0);
-  // gl.drawArrays(gl.TRIANGLES, 0, 8);
 }
 
 function render() {
@@ -206,13 +200,6 @@ function render() {
   var inverseMV = mat4();
   inverseMV = inverseMatrix(mv);
 
-
-  shading.lightPosition = applyTransformation(rotate(1.0, vec3(0.0, 1.0, 0.0)), shading.lightPosition);
-  // if (cubes.length ==) {
-  //
-  // }
-  cubes[2].center = vec3(shading.lightPosition);
-
   for (i in cubes) {
     var cube = cubes[i];
     drawCube(camera.projM, mv, inverseMV, cube);
@@ -220,25 +207,3 @@ function render() {
 
   requestAnimFrame( render );
 }
-
-// function drawCube(p, mv)
-// {
-//   gl.useProgram(theCubeProgram);
-//
-//   gl.uniformMatrix4fv( gl.getUniformLocation(theCubeProgram, "projectionMatrix"),
-//   false, flatten(p));
-//
-//   gl.uniformMatrix4fv( gl.getUniformLocation(theCubeProgram, "modelViewMatrix"),
-//   false, flatten(mv));
-//
-//   // Associate out shader variables with our data buffer
-//   var vPosition = gl.getAttribLocation(theCubeProgram, "vPosition");
-//   gl.bindBuffer(gl.ARRAY_BUFFER, theCubeVBOPoints);
-//   gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
-//   gl.enableVertexAttribArray(vPosition);
-//
-// // TESTING: just draw z side
-//   for (var i = 3/*0*/; i < 4/*6*/; i++) {
-//     gl.drawArrays(gl.LINE_LOOP, i * 4, 4);
-//   }
-// }
