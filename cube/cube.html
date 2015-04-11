@@ -2,83 +2,64 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-<script id="sphere-vertex-shader" type="x-shader/x-vertex">
+<script id="cube-vertex-shader" type="x-shader/x-vertex">
 attribute vec4 vPosition;
 
-varying vec3 fPosition;
-varying vec3 fCenter;
-varying float fRadius;
-uniform float radius;
+
+precision mediump float;
+
 varying vec3 L;
 varying vec3 E;
+varying vec3 fCenter;
+varying vec3 fUp;
+varying vec3 fFront;
+varying vec3 fSide;
+varying vec3 fNorm;
 
 uniform vec4 lightPosition;
 
-precision mediump float;
 uniform vec3 center;
+uniform vec3 up;
+uniform vec3 front;
+uniform float length;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 
 void
 main()
 {
-  vec3 pPrime = (modelViewMatrix * vec4(center, 1.0)).xyz;    // point of center after mv transformation
+  vec3 side = normalize(cross(-front, up));
+  vec3 unitV;  // calculated unit cube vertex
+  unitV = (vPosition.x*side + vPosition.y*up + vPosition.z*front);
 
-  vec3 v = vec3(0.0, 0.0, 0.0) - pPrime;                       // vector from center to eye
+  vec3 modelV = center + (1.0/2.0) * length * unitV;
+  vec4 fPosition = projectionMatrix * modelViewMatrix * vec4(modelV, 1.0);
 
-  vec3 vPrime;
-  if (v == vec3(0.0, 0.0, 0.0) || v.z == 0.0) {
-    vPrime = vec3(0.0, 0.0, 1.0);
-  } else {
-    vPrime = vec3(1, 1, -1.0 * (v.x + v.y) / v.z);      // vector orthagonal to v
-  }
+  gl_Position = fPosition;
 
-  if(vPosition.x == 1.0){
+  fCenter = (modelViewMatrix * vec4(center, 1.0)).xyz;
+  fSide = (modelViewMatrix * vec4(side, 0.0)).xyz;
+  fUp = (modelViewMatrix * vec4(up, 0.0)).xyz;
+  fFront = (modelViewMatrix * vec4(front, 0.0)).xyz;
 
-    vPrime = cross(v, vPrime);              // orthagonal to v and coplanar to previous vPrime
+  fNorm = (modelViewMatrix * vec4(modelV, 1.0)).xyz - fCenter;
 
-  } else if (vPosition.x == 2.0){
-
-    vPrime = cross(v, vPrime);
-    vPrime = cross(v, vPrime);              // orthagonal to v and coplanar to previous vPrimes
-
-  } else if (vPosition.x == 3.0){
-
-    vPrime = cross(v, vPrime);
-    vPrime = cross(v, vPrime);
-    vPrime = cross(v, vPrime);              // orthagonal to v and coplanar to previous vPrimes
-
-  }
-
-  vec3 t = pPrime + normalize(vPrime)*radius*sqrt(2.0);// vertex position of the square
-
-  vec4 tPrime = projectionMatrix * vec4(t, 1.0);      // vertex position with the projection applied
-
-  gl_Position = tPrime;
-
-  vec3 cirEdge = normalize(vPrime)*radius;
-  fRadius = length(cirEdge);
-
-  fPosition = t;                      // vertex position without projection
-  fCenter = pPrime;                    // center position without projection
-
-  E = normalize( - (tPrime).xyz);              // vertex from the position to the eye
-  L = normalize((projectionMatrix * modelViewMatrix * lightPosition).xyz - (tPrime).xyz);  // vetex position of the light
+  E =  - (fPosition).xyz;              // vertex from the position to the eye
+  L = (projectionMatrix * modelViewMatrix * lightPosition).xyz - (fPosition).xyz;  // vetex position of the light
 }
 </script>
 
-<script id="sphere-fragment-shader" type="x-shader/x-fragment">
+<script id="cube-fragment-shader" type="x-shader/x-fragment">
 precision mediump float;
 
-#ifdef GL_EXT_frag_depth
-	#extension GL_EXT_frag_depth : enable
-#endif
-
-varying vec3 fPosition;
+// varying vec3 fPosition;
 varying vec3 fCenter;
-varying float fRadius;
+varying vec3 fUp;
+varying vec3 fFront;
+varying vec3 fSide;
 varying vec3 L, E;
 
+varying vec3 fNorm;
 uniform float scale;
 uniform float ka;
 uniform float kd;
@@ -94,32 +75,42 @@ void
 main()
 {
 
-  #ifdef GL_EXT_frag_depth
-    gl_FragDepthEXT = gl_FragCoord.z;
-  #endif
-
   vec4 fColor = vec4(1.0, 0.0, 0.0, 1.0);
 
-  vec3 dif = fPosition - fCenter;
-  float distance = length(dif);              // distance from the center of the circle
+  vec3 norm = normalize(fNorm);
+  vec3 nUp = normalize(fUp);
+  vec3 nFront = normalize(fFront);
+  vec3 nSide = normalize(fSide);
 
-  if (distance > fRadius) {
-    // point is outside of the circle
-    #ifdef GL_EXT_frag_depth
-			discard;
-		#else
-			gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-		#endif
-    return;
+// calc normal based on fPosition, center, and up/side/front vectors
+  float dUp = abs(dot(norm, nUp));
+  float dFront = abs(dot(norm, nFront));
+  float dSide = abs(dot(norm, nSide));
+
+  // float dUp = dot(fUp, norm)/(length(fUp)*length(fUp));
+  // float dFront = dot(fFront, norm)/(length(fFront)*length(fFront));
+  // float dSide = dot(fSide, norm)/(length(fSide)*length(fSide));
+
+  if (dUp > dFront && dUp > dSide) {
+    if (dot(norm, nUp) > 0.0) {
+      norm = nUp;
+    } else {
+      norm = -nUp;
+    }
+  } else if (dFront > dUp && dFront > dSide) {
+    if (dot(norm, nFront) > 0.0) {
+      norm = nFront;
+    } else {
+      norm = -nFront;
+    }
+  } else if (dSide > dUp && dSide > dFront) {
+    if (dot(norm, nSide) > 0.0) {
+      norm = nSide;
+    } else {
+      norm = -nSide;
+    }
   }
-
-  float x = fPosition.x - fCenter.x;
-  float y = fPosition.y - fCenter.y;
-  float z = - sqrt(fRadius*fRadius - x * x - y * y);
-
-  vec3 norm = normalize(vec3(x, y, z));          // normal vector of the circle
-
-
+  norm = normalize((projectionMatrix * vec4(norm, 0.0)).xyz);
 
   // Text Cube???
   // vec4 spherePos = vec4(fPosition.x, fPosition.y, z, 1.0);
@@ -138,27 +129,6 @@ main()
   //   fColor = texColor;
   // }
 
-
-
-  /**************** 2D TEXTURE ****************/
-  /* texture parameters */
-  float pi = radians(180.0);
-
-  // Convert fragment position to object coordinates
-  vec3 texVec = ( invMV * vec4(fCenter + vec3(x, y, -z), 1.0)).xyz;
-  // Convert sphere center positionn to object coordinates
-  vec3 tempCenter = (invMV * vec4(fCenter, 1.0)).xyz;
-  // Vector from sphere surface position to sphere center
-  texVec = texVec - tempCenter;
-  texVec = normalize(texVec);
-
-  // Calculate the s and t coordinates for texture mapping
-  float sCoord = 0.5 + (atan(texVec.x,texVec.z))/(2.0*pi);
-  float tCoord = 0.5 - asin(texVec.y)/(pi);
-  vec2 texCoord = vec2(sCoord, tCoord);
-
-  fColor = texture2D( texture,  texCoord);
-  /************** END 2D TEXTURE **************/
 
   vec3 LL = normalize(L);
   vec3 EE = normalize(E);
@@ -185,7 +155,7 @@ main()
 <script type="text/javascript" src="../common/MV.js"></script>
 <script type="text/javascript" src="../common/camera.js"></script>
 <script type="text/javascript" src="../common/shading.js"></script>
-<script type="text/javascript" src="sphere.js"></script>
+<script type="text/javascript" src="cube.js"></script>
 <link rel="stylesheet" href="../common/fullscreen.css">
 </head>
 
