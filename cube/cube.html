@@ -3,20 +3,8 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 <script id="cube-vertex-shader" type="x-shader/x-vertex">
-attribute vec4 vPosition;
-
-
 precision mediump float;
-
-varying vec3 L;
-varying vec3 E;
-varying vec3 fCenter;
-varying vec3 fUp;
-varying vec3 fFront;
-varying vec3 fSide;
-varying vec3 cirNorm;
-
-uniform vec4 lightPosition;
+attribute vec4 vPosition;
 
 uniform vec3 center;
 uniform vec3 up;
@@ -24,6 +12,15 @@ uniform vec3 front;
 uniform float length;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
+uniform vec4 lightPosition;
+
+varying vec3 fCenter;
+varying vec3 fUp;
+varying vec3 fFront;
+varying vec3 fSide;
+varying vec3 E;
+varying vec3 L;
+varying vec3 cirNorm;
 
 void
 main()
@@ -47,7 +44,6 @@ main()
   cirNorm = (mvV).xyz - fCenter;                        // spherical normal
   E =  - (mvV).xyz;                                     // position to eye
   L = (modelViewMatrix * lightPosition).xyz - (mvV).xyz;// position of light
-
 }
 </script>
 

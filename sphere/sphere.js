@@ -51,13 +51,14 @@ window.onload = function init() {
 	gl.getExtension("EXT_frag_depth");
 
   shading = new Shading(canvas);
+  shading.lightPosition = vec4(2.0, 0.0, 0.0, 1.0);
   camera = new Camera(canvas);
 
   resizeCanvas(camera, canvas);
 
   // Configure WebGL
   gl.viewport( 0, 0, canvas.width, canvas.height );
-  gl.clearColor(0.95, 0.95, 0.95, 1.0 );
+  gl.clearColor(0.05, 0.05, 0.05, 1.0 );
 
   // init objects
   var sphere1 = new Sphere();
