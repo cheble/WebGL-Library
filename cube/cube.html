@@ -74,40 +74,31 @@ uniform sampler2D texture;
 void
 main()
 {
-
   vec4 fColor = vec4(1.0, 0.0, 0.0, 1.0);
 
-  vec3 norm = normalize(fNorm);
-  vec3 nUp = normalize(fUp);
-  vec3 nFront = normalize(fFront);
-  vec3 nSide = normalize(fSide);
+  // calc normal based on circular normal and up/side/front vectors
+  float dUp = abs(dot(fNorm, fUp));
+  float dFront = abs(dot(fNorm, fFront));
+  float dSide = abs(dot(fNorm, fSide));
 
-// calc normal based on fPosition, center, and up/side/front vectors
-  float dUp = abs(dot(norm, nUp));
-  float dFront = abs(dot(norm, nFront));
-  float dSide = abs(dot(norm, nSide));
-
-  // float dUp = dot(fUp, norm)/(length(fUp)*length(fUp));
-  // float dFront = dot(fFront, norm)/(length(fFront)*length(fFront));
-  // float dSide = dot(fSide, norm)/(length(fSide)*length(fSide));
-
+  vec3 norm = fNorm;
   if (dUp > dFront && dUp > dSide) {
-    if (dot(norm, nUp) > 0.0) {
-      norm = nUp;
+    if (dot(fNorm, fUp) > 0.0) {
+      norm = fUp;
     } else {
-      norm = -nUp;
+      norm = -fUp;
     }
   } else if (dFront > dUp && dFront > dSide) {
-    if (dot(norm, nFront) > 0.0) {
-      norm = nFront;
+    if (dot(fNorm, fFront) > 0.0) {
+      norm = fFront;
     } else {
-      norm = -nFront;
+      norm = -fFront;
     }
   } else if (dSide > dUp && dSide > dFront) {
-    if (dot(norm, nSide) > 0.0) {
-      norm = nSide;
+    if (dot(fNorm, fSide) > 0.0) {
+      norm = fSide;
     } else {
-      norm = -nSide;
+      norm = -fSide;
     }
   }
   norm = normalize((projectionMatrix * vec4(norm, 0.0)).xyz);
