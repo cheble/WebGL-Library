@@ -5,6 +5,7 @@ var shading;
 var camera;
 
 var modelVBOPoints;
+var modelVBONormals;
 var modelVertexIndexBuffer;
 var the3dModelProgram;
 
@@ -49,13 +50,24 @@ function initModel() {
   // buffer vertex data
   modelVBOPoints = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, modelVBOPoints);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(horse_data["vertices"]), gl.STATIC_DRAW);
+  // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(horse_data["vertices"]), gl.STATIC_DRAW);
+  // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bool_data["vertices"]), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(woman_data["vertices"]), gl.STATIC_DRAW);
 
+  modelVBONormals = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, modelVBONormals);
+  // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(horse_data["normals"]), gl.STATIC_DRAW);
+  // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bool_data["normals"]), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(woman_data["normals"]), gl.STATIC_DRAW);
 
   modelVertexIndexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, modelVertexIndexBuffer);
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(horse_data["faces"]), gl.STATIC_DRAW);
-  console.log(horse_data["faces"].length);
+  // gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(horse_data["faces"]), gl.STATIC_DRAW);
+  // gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(bool_data["faces"]), gl.STATIC_DRAW);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(woman_data["polygons"]), gl.STATIC_DRAW);
+  console.log(woman_data["polygons"].length);
+  console.log(woman_data["vertices"].length);
+  console.log(woman_data["normals"].length);
 
 }
 
@@ -79,12 +91,16 @@ function drawModel(p, mv, inverseMV) {
   gl.bindBuffer(gl.ARRAY_BUFFER, modelVBOPoints);
   gl.vertexAttribPointer(vPosition, 3, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(vPosition);
+  var vNormal = gl.getAttribLocation(the3dModelProgram, "vNormal");
+  gl.bindBuffer(gl.ARRAY_BUFFER, modelVBONormals);
+  gl.vertexAttribPointer(vNormal, 3, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(vNormal);
 
   //draw
-  // gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, modelVertexIndexBuffer);
-  // gl.drawElements(gl.TRIANGLES, 39592/3, gl.UNSIGNED_SHORT, 39592/2);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, modelVertexIndexBuffer);
+  gl.drawElements(gl.TRIANGLES, 7024*3, gl.UNSIGNED_SHORT, 0);
 
-  gl.drawArrays(gl.POINTS, 0, 100);
+  // gl.drawArrays(gl.POINTS, 0, 18474/3.0);
 }
 
 function inverseMatrix(mat) {
@@ -234,7 +250,7 @@ function render() {
   gl.clear( gl.COLOR_BUFFER_BIT );
 
   // modelview matrix
-  var t = translate(0.0, 0.0, -10.0);
+  var t = translate(0.0, 0.0, -25.0);
   var s = scale(camera.scale, camera.scale, camera.scale);
   var r = buildRotationMatrix(camera.curtQuat);
   var mv = mat4();
