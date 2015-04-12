@@ -23,6 +23,7 @@ window.onload = function init() {
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 	gl.getExtension("EXT_frag_depth");
+	// gl.getExtension("OES_element_index_uint");
 
   shading = new Shading(canvas);
   camera = new Camera(canvas);
@@ -53,21 +54,24 @@ function initModel() {
   // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(horse_data["vertices"]), gl.STATIC_DRAW);
   // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bool_data["vertices"]), gl.STATIC_DRAW);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(woman_data["vertices"]), gl.STATIC_DRAW);
+  // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lion_data["vertices"]), gl.STATIC_DRAW);
 
   modelVBONormals = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, modelVBONormals);
   // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(horse_data["normals"]), gl.STATIC_DRAW);
   // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bool_data["normals"]), gl.STATIC_DRAW);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(woman_data["normals"]), gl.STATIC_DRAW);
+  // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lion_data["normals"]), gl.STATIC_DRAW);
 
   modelVertexIndexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, modelVertexIndexBuffer);
-  // gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(horse_data["faces"]), gl.STATIC_DRAW);
-  // gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(bool_data["faces"]), gl.STATIC_DRAW);
+  // gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(horse_data["polygons"]), gl.STATIC_DRAW);
+  // gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(bool_data["polygons"]), gl.STATIC_DRAW);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(woman_data["polygons"]), gl.STATIC_DRAW);
-  console.log(woman_data["polygons"].length);
-  console.log(woman_data["vertices"].length);
-  console.log(woman_data["normals"].length);
+  // gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(lion_data["polygons"]), gl.STATIC_DRAW);
+  // console.log(woman_data["polygons"].length);
+  // console.log(woman_data["vertices"].length);
+  // console.log(woman_data["normals"].length);
 
 }
 
@@ -98,6 +102,7 @@ function drawModel(p, mv, inverseMV) {
 
   //draw
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, modelVertexIndexBuffer);
+  // gl.drawElements(gl.TRIANGLES, 150847*3, gl.UNSIGNED_INT, 0);
   gl.drawElements(gl.TRIANGLES, 7024*3, gl.UNSIGNED_SHORT, 0);
 
   // gl.drawArrays(gl.POINTS, 0, 18474/3.0);
@@ -250,7 +255,7 @@ function render() {
   gl.clear( gl.COLOR_BUFFER_BIT );
 
   // modelview matrix
-  var t = translate(0.0, 0.0, -25.0);
+  var t = translate(0.0, 0.0, -35.0);
   var s = scale(camera.scale, camera.scale, camera.scale);
   var r = buildRotationMatrix(camera.curtQuat);
   var mv = mat4();
