@@ -52,7 +52,7 @@ main()
 
   vec4 newVPos = vPosition /*+ vec4(1874,1874,1874,0))/(1831.0+1874.0)*/; //max=1831, min=-1874
 
-  gl_PointSize = 5.0;
+  gl_PointSize = 0.5;
   vec4 mvV = modelViewMatrix * newVPos;
   vec4 pos = projectionMatrix * mvV;
 
@@ -116,10 +116,12 @@ main()
 <script type="text/javascript" src="../common/MV.js"></script>
 <script type="text/javascript" src="../common/camera.js"></script>
 <script type="text/javascript" src="../common/shading.js"></script>
+<script type="text/javascript" src="../common/util.js"></script>
 <script type="text/javascript" src="3d-model.js"></script>
 <!-- <script src="../resources/horse.js"></script> -->
 <!-- <script src="../resources/bool.js"></script> -->
-<script src="../resources/woman.js"></script>
+<!-- <script src="../resources/woman.js"></script> -->
+<script src="../resources/centaur.js"></script>
 <!-- <script src="../resources/lion.js"></script> -->
 <link rel="stylesheet" href="../common/fullscreen.css">
 </head>

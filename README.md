@@ -15,8 +15,11 @@ So far, I have used resources from the following sources:
 
 
 <b>TODO</b>
-- [ ] use Object-Orient for sphere
-- [ ] implement up vector for sphere/cube (and front vector)
+- [ ] Object-Orient more
+- [ ] clean up 3d-model
+- [ ] implement shadows
+- [ ] create util to calculate normals
+- [ ] implement up/front vector for sphere
 - [ ] extract shaders into a separate file
 - [ ] move examples to example folder
 - [ ] delete testing files/folders
