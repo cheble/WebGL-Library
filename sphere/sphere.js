@@ -8,6 +8,8 @@ function Sphere() {
   this.textureSrc = null;
   /** Sphere 2-D Texture */
   this.texture = null;
+  /** Sphere Color */
+  this.color = vec4(0.0, 0.0, 0.0, 1.0);
 
 }
 

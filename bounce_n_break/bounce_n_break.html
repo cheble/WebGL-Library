@@ -103,23 +103,6 @@ main()
   vec3 EE = normalize(E);
   vec3 HH = normalize( LL + EE );
 
-  // Text Cube???
-  // vec4 spherePos = vec4(fPosition.x, fPosition.y, z, 1.0);
-  //
-  // vec4 posEye = projectionMatrix * vec4(fPosition, 1.0);
-  // //posEye.z = z;
-  // vec4 centerEye = projectionMatrix * vec4(fCenter, 1.0);
-  //
-  // vec4 normTexture = (invMV) * posEye - (invMV) * centerEye;
-  // //normTexture = vec4(norm, 1.0) * (invMV) - vec4(fCenter, 1.0) * (invMV);
-  // normTexture = normalize(normTexture);
-  //
-  // fColor = vec4(1.0, 1.0, 1.0, 1.0);
-  // vec4 texColor = textureCube(texMap, norm);
-  // if(texColor.a == 1.0){
-  //   fColor = texColor;
-  // }
-
   /**************** 2D TEXTURE ****************/
   /* texture parameters */
   float pi = radians(180.0);
@@ -153,38 +136,16 @@ main()
 
 }
 </script>
-<script>
-
-function addSphere() {
-  alert('Hello World!');
-}
-
-</script>
 <script type="text/javascript" src="../common/webgl-utils.js"></script>
 <script type="text/javascript" src="../common/initShaders.js"></script>
 <script type="text/javascript" src="../common/MV.js"></script>
 <script type="text/javascript" src="../common/camera.js"></script>
 <script type="text/javascript" src="../common/shading.js"></script>
-<script type="text/javascript" src="sphere.js"></script>
+<script type="text/javascript" src="bounce_n_break.js"></script>
 <link rel="stylesheet" href="../common/fullscreen.css">
 </head>
 
 <body>
-  <div style="width: 100%; position: absolute; background-color: White;">
-    <div class="controls" sytle="padding: 4px;">
-      X: <input type="text" name="x" value="0.0">
-      Y: <input type="text" name="y" value="0.0">
-      Z: <input type="text" name="z" value="0.0">
-      Radius: <input type="text" name="radius" value="1.0">
-    </div>
-    <div class="controls" sytle="padding: 4px;">
-      Red: <input type="text" name="red" value="0.0">
-      Green: <input type="text" name="green" value="0.0">
-      Blue: <input type="text" name="blue" value="0.0">
-      Alpha: <input type="text" name="alpha" value="1.0">
-    </div>
-    <input type="button" onclick="addSphere();" value="Create Sphere">
-  </div>
 <canvas id="gl-canvas">
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>

@@ -45,15 +45,15 @@ window.onload = function init() {
 	gl.getExtension("EXT_frag_depth");
 
   shading = new Shading(canvas);
-  shading.lightPosition = vec4(0.0, -10.0, 0.0, 1.0);
-  shading.ka = 0.2;
+  shading.lightPosition = vec4(0.0, 200.0, 0.0, 1.0);
+  shading.ka = 0.5;
   camera = new Camera(canvas);
 
   resizeCanvas(camera, canvas);
 
   // Configure WebGL
   gl.viewport( 0, 0, canvas.width, canvas.height );
-  gl.clearColor(0.05, 0.05, 0.05, 1.0 );
+  gl.clearColor(0.95, 0.95, 0.05, 1.0 );
 
   // init objects
   // initTextures();
@@ -159,7 +159,7 @@ function render() {
   gl.clear( gl.COLOR_BUFFER_BIT );
 
   // modelview matrix
-  var t = translate(0.0, 0.0, -3.0);
+  var t = translate(0.0, 0.0, -300.0);
   var s = scale(camera.scale, camera.scale, camera.scale);
   var r = buildRotationMatrix(camera.curtQuat);
   var mv = mat4();
